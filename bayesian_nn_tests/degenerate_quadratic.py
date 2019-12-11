@@ -12,8 +12,11 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import pandas as pd
 
+assert pyro.__version__.startswith('1.1.0')
+pyro.enable_validation(True)    # <---- This is always a good idea!
 
-batches = 1_000
+
+batches = 2_000
 
 USE_GPU = torch.cuda.is_available()
 if USE_GPU:
@@ -34,6 +37,10 @@ def tonp(tensor):
 
 
 x_test, t_test = next(get_data())
+idx = torch.argsort(x_test.squeeze())
+x_test = x_test[idx, :]
+t_test = t_test[idx, :]
+
 
 torch_model = nn.Sequential(
     nn.Linear(1, 10),
@@ -72,11 +79,11 @@ plt.plot(losses)
 plt.yscale('log')
 
 plt.figure()
-plt.plot(tonp(x_test), tonp(t_test), '.')
-plt.plot(tonp(x_test), tonp(preds), '.')
+plt.plot(tonp(x_test), tonp(t_test))
+plt.plot(tonp(x_test), tonp(preds))
 
-plt.figure()
-plt.plot(tonp(t_test) - tonp(preds), '.')
+# plt.figure()
+# plt.plot(tonp(t_test) - tonp(preds), '.')
 
 
 def model(x, y=None):
@@ -98,17 +105,17 @@ def model(x, y=None):
 
 guide = AutoDiagonalNormal(model)
 
-AdamArgs = {'lr': 1e-2}
+AdamArgs = {'lr': 1e-1}
 optimizer = torch.optim.Adam
 sch = pyro.optim.ReduceLROnPlateau({'optimizer': optimizer, 'optim_args': AdamArgs,
-                                    'verbose': True, 'patience': 100, 'min_lr': 1e-8})
+                                    'verbose': True, 'patience': 1000, 'min_lr': 1e-3})
 svi = SVI(model, guide, sch, loss=Trace_ELBO())
 
 losses = []
 
 pbar = tqdm(get_data(), total=batches)
 for i, (x, t) in enumerate(pbar):
-    loss = svi.step(x, t)
+    loss = svi.step(x, t.squeeze())
     losses.append(loss)
     pbar.set_description(f"{loss:.5f}")
     sch.step(np.mean(losses[-200:]))
@@ -131,7 +138,7 @@ def summary(samples):
     return site_stats
 
 
-predictive = Predictive(model, guide=guide, num_samples=80,
+predictive = Predictive(model, guide=guide, num_samples=800,
                         return_sites=("obs", "_RETURN"))
 samples = predictive(x_test)
 pred_summary = summary(samples)
@@ -151,6 +158,6 @@ predictions = pd.DataFrame({
 })
 
 plt.figure()
-plt.plot(tonp(x_test), tonp(t_test), '.')
+plt.plot(tonp(x_test), tonp(t_test))
 plt.plot(predictions.x, predictions.mu_mean, '.')
 # plt.plot(predictions.x, predictions.y_mean, '.')
