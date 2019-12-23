@@ -1,0 +1,21 @@
+\begin{thebibliography}{1}
+
+\bibitem{github:aa}
+B.~Hammel.
+\newblock bdhammel/bayesian-stats-classes/.
+\newblock www.github.com, December 2019.
+
+\bibitem{Menne:2019aa}
+M.~J. Menne, I.~Durre, B.~Korzeniewski, S.~McNeal, K.~Thomas, X.~Yin,
+  S.~Anthony, R.~Ray, R.~S. Vose, B.~E.Gleason, and T.~G. Houston.
+\newblock Global historical climatology network - daily (ghcn-daily), version
+  3.
+\newblock NOAA National Climatic Data Center. doi:10.7289/V5D21VHZ, December
+  2019.
+
+\bibitem{U.S.G.S.:2019aa}
+U.S.G.S.
+\newblock National water information system data available on the world wide
+  web (usgs water data for the nation), December 2019.
+
+\end{thebibliography}
